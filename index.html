@@ -1542,6 +1542,13 @@
           if (!r || !r.c || !r.c[cIdx]) return null;
           return r.c[cIdx].v !== undefined && r.c[cIdx].v !== null ? r.c[cIdx].v : r.c[cIdx].f;
         };
+        const getNum = (rIdx, cIdx) => {
+          const r = rows[rIdx];
+          if (!r || !r.c || !r.c[cIdx]) return NaN;
+          const v = r.c[cIdx].v;
+          if (typeof v === 'number' && !isNaN(v)) return v;
+          return NaN;
+        };
 
         // 1. EXTRAER TABLA DINÁMICA DE EGRESOS POR CONCEPTO (Columnas G=6, J=9, K=10)
         const nuevosEgresos = [];
@@ -1549,8 +1556,8 @@
 
         for (let r = 0; r < Math.min(rows.length, 40); r++) {
           const labelG = String(getVal(r, 6) || '').trim();
-          const montoJ = Number(getVal(r, 9));
-          const pctK = Number(getVal(r, 10));
+          const montoJ = getNum(r, 9);
+          const pctK = getNum(r, 10);
 
           if (labelG.toLowerCase() === 'suma total' && !isNaN(montoJ) && montoJ > 0) {
             nuevaSumaTD = montoJ;
@@ -1579,6 +1586,7 @@
         const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         const nuevasTipologias = [];
         let proyectoHeaderPos = null;
+        let resumenAnualCol = null;
 
         for (let r = 0; r < Math.min(rows.length, 85); r++) {
           const rowCells = rows[r].c || [];
@@ -1590,36 +1598,38 @@
 
             // A) Meses del Resumen Anual
             if (mesesNombres.includes(text)) {
-              const ing = Number(getVal(r, c + 1)) || 0;
-              const egr = Number(getVal(r, c + 2)) || 0;
-              const tot = Number(getVal(r, c + 3)) || (ing - egr);
-              monthMap[text] = { ingresos: ing, egresos: egr, total: tot };
-            } else if (upper === 'TOTAL') {
-              const n1 = Number(getVal(r, c + 1));
-              const n2 = Number(getVal(r, c + 2));
-              const n3 = Number(getVal(r, c + 3));
-              const n4 = Number(getVal(r, c + 4));
-              // Distinguir entre TOTAL de Resumen Anual (3 cols) y TOTAL de Tipología (4 cols con % = 1)
-              if (!isNaN(n1) && !isNaN(n2) && !isNaN(n3) && (isNaN(n4) || n4 === 0)) {
+              resumenAnualCol = c;
+              const ing = getNum(r, c + 1);
+              const egr = getNum(r, c + 2);
+              const tot = getNum(r, c + 3);
+              const ingSafe = !isNaN(ing) ? ing : 0;
+              const egrSafe = !isNaN(egr) ? egr : 0;
+              const totSafe = !isNaN(tot) ? tot : (ingSafe - egrSafe);
+              monthMap[text] = { ingresos: ingSafe, egresos: egrSafe, total: totSafe };
+            } else if (upper === 'TOTAL' && c === resumenAnualCol) {
+              const n1 = getNum(r, c + 1);
+              const n2 = getNum(r, c + 2);
+              const n3 = getNum(r, c + 3);
+              if (!isNaN(n1) && !isNaN(n2) && !isNaN(n3) && n1 > 0) {
                 RESUMEN_TOTALES_HOJA.ingresosTotal = n1;
                 RESUMEN_TOTALES_HOJA.egresosTotal = n2;
                 RESUMEN_TOTALES_HOJA.flujoNetoTotal = n3;
               }
-            } else if (upper === 'PROMEDIO') {
-              const p1 = Number(getVal(r, c + 1));
-              const p2 = Number(getVal(r, c + 2));
-              const p3 = Number(getVal(r, c + 3));
-              if (!isNaN(p1)) RESUMEN_TOTALES_HOJA.ingresosPromedio = p1;
-              if (!isNaN(p2)) RESUMEN_TOTALES_HOJA.egresosPromedio = p2;
+            } else if (upper === 'PROMEDIO' && c === resumenAnualCol) {
+              const p1 = getNum(r, c + 1);
+              const p2 = getNum(r, c + 2);
+              const p3 = getNum(r, c + 3);
+              if (!isNaN(p1) && p1 > 0) RESUMEN_TOTALES_HOJA.ingresosPromedio = p1;
+              if (!isNaN(p2) && p2 > 0) RESUMEN_TOTALES_HOJA.egresosPromedio = p2;
               if (!isNaN(p3)) RESUMEN_TOTALES_HOJA.flujoNetoPromedio = p3;
             }
 
             // B) Ingresos por Tipo de Proyecto (CASA, DESARROLLOS, SERVICIOS)
             if (['CASA', 'DESARROLLOS', 'SERVICIOS'].includes(upper)) {
-              const cob = Number(getVal(r, c + 1));
-              const porCob = Number(getVal(r, c + 2));
-              const tot = Number(getVal(r, c + 3));
-              const pct = Number(getVal(r, c + 4));
+              const cob = getNum(r, c + 1);
+              const porCob = getNum(r, c + 2);
+              const tot = getNum(r, c + 3);
+              const pct = getNum(r, c + 4);
               if (!isNaN(cob) && !isNaN(tot) && tot > 0) {
                 nuevasTipologias.push({
                   tipo: upper,
@@ -1633,13 +1643,13 @@
 
             // C) Meta de Cobro 4T2026
             if (upper === 'META DE COBRO 4T2026') {
-              const mVal = Number(getVal(r, c + 1));
+              const mVal = getNum(r, c + 1);
               if (!isNaN(mVal) && mVal > 0) META_4T2026.metaTotal = mVal;
             } else if (upper === 'COBRADO 4T2026') {
-              const cVal = Number(getVal(r, c + 1));
+              const cVal = getNum(r, c + 1);
               if (!isNaN(cVal)) META_4T2026.cobrado = cVal;
             } else if (upper === 'POR COBRAR 4T2026') {
-              const pVal = Number(getVal(r, c + 1));
+              const pVal = getNum(r, c + 1);
               if (!isNaN(pVal)) META_4T2026.porCobrar = pVal;
             } else if (upper === 'PROYECTO') {
               proyectoHeaderPos = { row: r, col: c };
