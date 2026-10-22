@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESENCIAL Studio | Rendimiento Financiero 2026 y Proyecciones 4T</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            ivory: '#F7F5F0',
+            crimson: {
+              600: '#9E1B32',
+              700: '#7D1426',
+              50: '#FDF2F4'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #F6F5F0;
+      color: #141413;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #EAE8E1;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #B8B4A9;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #8C887E;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #e11d48 0%, #f59e0b 45%, #10b981 80%, #059669 100%);
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
+      background: #141413;
+      border: 3px solid #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      margin-top: -7px;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+      background: #9E1B32;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-slate-900 selection:text-white min-h-screen flex flex-col">
+
+  <!-- ================= HEADER EJECUTIVO (ESTILO REPORTE CORPORATIVO) ================= -->
+  <header class="bg-[#121212] text-white border-b border-neutral-800 sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="w-3 h-3 rounded-full bg-[#9E1B32] ring-4 ring-[#9E1B32]/20"></span>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <span class="text-xs font-bold uppercase tracking-[0.2em] text-neutral-300">ESENCIAL STUDIO · FINANZAS CORPORATIVAS</span>
+            <span class="hidden sm:inline-block text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              Hoja: Tabla Dinámica Contabilidad
+            </span>
+          </div>
+          <p class="text-[11px] text-neutral-400 hidden sm:block">
+            Rendimiento Financiero 2026, Estructura Analítica del Gasto y Meta de Cobro 4T2026 (Cifras en MXN)
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <!-- Estado de Sincronización en Vivo con Google Sheets -->
+        <div id="syncStatusBadge" class="hidden sm:flex items-center gap-2 bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-1.5 text-xs">
+          <span id="syncDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="syncText" class="text-neutral-300 font-mono text-[11px]">Sincronizando Sheets...</span>
+        </div>
+
+        <button id="btnSyncSheets" onclick="syncWithGoogleSheets(true)" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-3 py-2 shadow-sm transition" title="Leer últimos cambios directamente desde Google Sheets">
+          <i id="syncIcon" data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          <span>Sincronizar Sheets</span>
+        </button>
+
+        <button onclick="resetDashboard()" class="inline-flex items-center gap-1.5 text-xs font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 rounded-lg px-3 py-2 transition" title="Restaurar filtros y simulador al 100%">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          <span class="hidden lg:inline">Restaurar Filtros</span>
+        </button>
+
+        <button onclick="exportMonthlyCSV()" class="inline-flex items-center gap-1.5 text-xs font-medium bg-[#9E1B32] hover:bg-[#7D1426] text-white rounded-lg px-3.5 py-2 shadow-sm transition">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Exportar CSV</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= CONTENIDO PRINCIPAL ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-8">
+
+    <!-- 1. BANNER DE TÍTULO Y MÉTRICAS PRINCIPALES (KPI CARDS) -->
+    <section class="space-y-5">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-neutral-300/80 pb-4">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-[#9E1B32]">ESENCIAL STUDIO · BALANCE ACUMULADO 2026</p>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 mt-1">
+            Rendimiento Financiero 2026 y Meta 4T2026
+          </h1>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-mono text-neutral-500 mr-1">Periodo en Tabla/Gráfico:</span>
+          <div class="inline-flex p-1 rounded-xl bg-neutral-200/90 border border-neutral-300/80" role="group">
+            <button onclick="setQuarterFilter('ALL')" data-q="ALL" class="q-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-neutral-900 text-white shadow-sm">Todo 2026</button>
+            <button onclick="setQuarterFilter('Q1')" data-q="Q1" class="q-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-neutral-600 hover:text-neutral-900">Q1</button>
+            <button onclick="setQuarterFilter('Q2')" data-q="Q2" class="q-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-neutral-600 hover:text-neutral-900">Q2</button>
+            <button onclick="setQuarterFilter('Q3')" data-q="Q3" class="q-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-neutral-600 hover:text-neutral-900">Q3</button>
+            <button onclick="setQuarterFilter('Q4')" data-q="Q4" class="q-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-neutral-600 hover:text-neutral-900">Q4</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 KPI Cards Principales -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- KPI 1: Ingresos Totales (Resumen Anual) -->
+        <div class="bg-white rounded-xl p-5 border border-neutral-200/90 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-neutral-500">Ingresos Acumulados</span>
+              <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                <i data-lucide="trending-up" class="w-4 h-4"></i>
+              </span>
+            </div>
+            <h3 id="kpiIngresosTotal" class="text-2xl sm:text-3xl font-extrabold font-mono text-neutral-900 mt-2">$6,700,767.11</h3>
+          </div>
+          <div class="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-xs">
+            <span class="text-neutral-500">Promedio Hoja:</span>
+            <span id="kpiIngresosProm" class="font-mono font-semibold text-emerald-700">$690,800.73 / mes</span>
+          </div>
+        </div>
+
+        <!-- KPI 2: Egresos Totales (Resumen Anual + Tabla Dinámica) -->
+        <div class="bg-white rounded-xl p-5 border border-neutral-200/90 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-neutral-500">Egresos Totales</span>
+              <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-700 flex items-center justify-center">
+                <i data-lucide="trending-down" class="w-4 h-4"></i>
+              </span>
+            </div>
+            <h3 id="kpiEgresosTotal" class="text-2xl sm:text-3xl font-extrabold font-mono text-neutral-900 mt-2">$6,524,289.26</h3>
+          </div>
+          <div class="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-xs">
+            <span class="text-neutral-500">Prom: <strong id="kpiEgresosProm" class="font-mono text-neutral-700">$672,607.14</strong></span>
+            <span class="font-mono text-[11px] text-emerald-700 font-semibold" title="Cuadra 100% con Tabla Dinámica por Concepto">100% Cuadrado</span>
+          </div>
+        </div>
+
+        <!-- KPI 3: Flujo Neto / Balance Acumulado -->
+        <div class="bg-white rounded-xl p-5 border-2 border-[#9E1B32]/80 shadow-sm flex flex-col justify-between relative">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#9E1B32]">Flujo Neto Acumulado</span>
+              <span class="w-8 h-8 rounded-lg bg-[#9E1B32]/10 text-[#9E1B32] flex items-center justify-center">
+                <i data-lucide="wallet" class="w-4 h-4"></i>
+              </span>
+            </div>
+            <h3 id="kpiFlujoNeto" class="text-2xl sm:text-3xl font-extrabold font-mono text-neutral-900 mt-2">+$176,477.85</h3>
+          </div>
+          <div class="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-xs">
+            <span id="kpiMargenNeto" class="font-semibold text-[#9E1B32]">Margen Neto: 2.63%</span>
+            <span id="kpiRetiroSocios" class="font-mono text-neutral-500">Retiro Socios: $411.7K</span>
+          </div>
+        </div>
+
+        <!-- KPI 4: Meta de Cobro 4T2026 vs Cobrado / Por Cobrar -->
+        <div class="bg-[#141413] text-white rounded-xl p-5 border border-neutral-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">Meta de Cobro 4T2026</span>
+              <span id="kpiMetaPctBadge" class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                8.75% Cobrado
+              </span>
+            </div>
+            <h3 id="kpiMeta4TTotal" class="text-2xl sm:text-3xl font-extrabold font-mono text-white mt-2">$2,496,078.06</h3>
+          </div>
+          <div class="mt-3 space-y-1.5">
+            <div class="w-full bg-neutral-800 h-2 rounded-full overflow-hidden flex">
+              <div id="kpiMetaCobradoBar" class="bg-emerald-400 h-full transition-all duration-300" style="width: 8.75%" title="Cobrado 4T2026"></div>
+              <div id="kpiMetaSimBar" class="bg-amber-400/80 h-full transition-all duration-300" style="width: 91.25%" title="Por Cobrar Simulado"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <span id="kpiCobrado4TLabel" class="text-emerald-400">Cobrado: $218,515.00</span>
+              <span class="text-amber-300" id="kpiPorCobrarLabel">Por Cobrar: $2,277,563.06</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Barra Resumen de Generación de Utilidad y Cartera Total -->
+      <div class="bg-white rounded-xl px-5 py-3.5 border border-neutral-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-1">
+          <span>
+            <strong class="text-neutral-900">Generación Real Total de Utilidad (Flujo Neto + Retiro Socios):</strong>
+            <span id="barUtilidadTotal" class="font-mono font-bold text-emerald-700 ml-1">$588,169.34</span>
+            <span id="barUtilidadDesglose" class="text-neutral-400 font-mono">($176,477.85 + $411,691.49)</span>
+          </span>
+          <span>
+            <strong class="text-neutral-900">Cartera Total 2026 (Por Tipo de Proyecto):</strong>
+            <span id="barCarteraTotal" class="font-mono font-bold text-neutral-900 ml-1">$7,699,292.36</span>
+            <span id="barCarteraDesglose" class="text-neutral-500 font-mono">(Cobrado: $5,616,929.30 · Por Cobrar: $2,082,363.06)</span>
+          </span>
+        </div>
+        <span id="headerSimStatus" class="text-[11px] font-mono font-semibold uppercase tracking-wider text-[#9E1B32] shrink-0">Esencial Studio · 2026</span>
+      </div>
+    </section>
+
+    <!-- 2. PANEL DE VISUALIZACIONES PRINCIPALES (CHART.JS) -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Gráfico 1: Comportamiento Mensual de Ingresos vs Egresos y Saldo Mensual -->
+      <div class="lg:col-span-8 bg-white rounded-2xl border border-neutral-200/90 shadow-sm p-5 sm:p-6 flex flex-col justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9E1B32]">AUDITORÍA DE FLUJO OPERATIVO (ENE – DIC 2026)</p>
+            <h2 class="text-base sm:text-lg font-bold text-neutral-900 mt-0.5">Comportamiento Mensual: Ingresos vs. Egresos</h2>
+            <p class="text-xs text-neutral-500">Pico Máximo de Ingresos en Agosto ($1,298,182.00) · Pico de Egresos en Junio ($936,202.44)</p>
+          </div>
+          <div class="flex items-center gap-3 text-xs font-medium text-neutral-600">
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span>Ingresos</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#9E1B32]"></span>Egresos</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-0.5 bg-neutral-900"></span>Saldo Mensual</span>
+          </div>
+        </div>
+        <div class="relative h-72 sm:h-80 w-full">
+          <canvas id="chartMensual"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico 2: Evolución de Flujo de Efectivo / Saldo Mensual y Acumulado -->
+      <div class="lg:col-span-4 bg-white rounded-2xl border border-neutral-200/90 shadow-sm p-5 sm:p-6 flex flex-col justify-between">
+        <div class="mb-4">
+          <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9E1B32]">LIQUIDEZ ACUMULADA</p>
+          <h2 class="text-base sm:text-lg font-bold text-neutral-900 mt-0.5">Evolución del Flujo Neto 2026</h2>
+          <p class="text-xs text-neutral-500">Saldo mensual (superávit/déficit) y curva de saldo acumulado ($176,477.85 en Oct).</p>
+        </div>
+        <div class="relative h-72 sm:h-80 w-full">
+          <canvas id="chartFlujoAcumulado"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 3. SIMULADOR DINÁMICO 4T2026 + GRÁFICO DE META DE COBRO 4T2026 -->
+    <section class="bg-white rounded-2xl border border-neutral-200/90 shadow-sm p-5 sm:p-6 space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+
+        <!-- Controles del Simulador -->
+        <div class="lg:col-span-6 space-y-4">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9E1B32]">MODELO PROYECTIVO 4T2026 · SIMULADOR DE COBRANZA</p>
+            <h2 class="text-lg sm:text-xl font-bold text-neutral-900 mt-0.5">
+              Simulador de Meta de Cobro 4T2026 (<span id="simTitleMeta">$2,496,078.06</span>)
+            </h2>
+            <p class="text-xs text-neutral-500 mt-1 leading-relaxed">
+              En la hoja <strong>Tabla Dinámica Contabilidad</strong>, la meta del 4T2026 es de <strong id="simDescMeta">$2,496,078.06</strong>, de los cuales ya se cobraron <strong id="simDescCobrado">$218,515.00</strong> y restan por cobrar <strong id="simDescPorCobrar">$2,277,563.06</strong>. Ajusta el porcentaje de efectividad sobre el saldo pendiente por cobrar:
+            </p>
+          </div>
+
+          <div class="bg-[#F6F5F0] p-4 rounded-xl border border-neutral-200/90 space-y-3">
+            <div class="flex items-center justify-between">
+              <label for="simSlider" class="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                Efectividad sobre Saldo Por Cobrar (<span id="simLabelPorCobrar">$2,277,563.06</span>):
+              </label>
+              <div class="flex items-center gap-1">
+                <input
+                  id="simInput"
+                  type="number"
+                  min="0"
+                  max="120"
+                  step="1"
+                  value="100"
+                  class="w-16 text-right font-mono text-sm font-bold text-neutral-900 bg-white border border-neutral-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#9E1B32]"
+                />
+                <span class="font-mono text-sm font-bold text-neutral-700">%</span>
+              </div>
+            </div>
+
+            <input id="simSlider" type="range" min="0" max="120" step="1" value="100" class="w-full" />
+
+            <div class="flex items-center justify-between text-[11px] font-mono text-neutral-500 pt-1">
+              <button onclick="updateSimulation(50)" class="hover:text-rose-700 transition">Conservador (50%)</button>
+              <button onclick="updateSimulation(80)" class="hover:text-amber-700 transition">Moderado (80%)</button>
+              <button onclick="updateSimulation(100)" class="font-bold text-neutral-900 underline">100% Meta ($2.28M)</button>
+              <button onclick="updateSimulation(110)" class="hover:text-emerald-700 transition">Sobrecumplimiento (110%)</button>
+            </div>
+          </div>
+
+          <!-- Tarjetas de resultado de la simulación 4T -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Ya Cobrado 4T2026</span>
+              <p id="simYaCobradoVal" class="text-base font-mono font-bold text-emerald-900 mt-1">$218,515.00</p>
+              <span id="simYaCobradoPct" class="text-[11px] text-emerald-700 font-mono">8.75% de la meta</span>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-amber-900">Por Cobrar Simulado</span>
+              <p id="simPorCobrarVal" class="text-base font-mono font-bold text-amber-950 mt-1">$2,277,563.06</p>
+              <span id="simPorCobrarSub" class="text-[11px] text-amber-800 font-mono">100% de $2,277,563.06</span>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-[#141413] text-white">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Cobro Total 4T Proy.</span>
+              <p id="simTotal4TVal" class="text-base font-mono font-bold text-emerald-400 mt-1">$2,496,078.06</p>
+              <span id="simBrechaMeta" class="text-[11px] text-neutral-300 font-mono">100.0% de Meta 4T</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfico Comparativo 4T2026 -->
+        <div class="lg:col-span-6">
+          <div class="bg-[#F6F5F0]/60 rounded-xl p-4 border border-neutral-200/80">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                Meta 4T2026 vs. Cobrado Real y Proyección Simulada
+              </h3>
+              <span id="simChartTag" class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                Meta Alcanzada (100%)
+              </span>
+            </div>
+            <div class="relative h-60 w-full">
+              <canvas id="chartMeta4T"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. ESTRUCTURA DE COSTOS (DISTRIBUCIÓN DE EGRESOS POR CONCEPTO) + INGRESOS POR TIPO DE PROYECTO -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Distribución de los Egresos por Concepto (18 categorías exactas de la Tabla Dinámica) -->
+      <div class="lg:col-span-7 bg-white rounded-2xl border border-neutral-200/90 shadow-sm p-5 sm:p-6 flex flex-col justify-between">
+        <div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-neutral-200">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9E1B32]">ESTRUCTURA DE COSTOS · TABLA DINÁMICA</p>
+              <h2 class="text-base sm:text-lg font-bold text-neutral-900 mt-0.5">Egresos 2026: Distribución por Concepto</h2>
+            </div>
+            <div class="text-right">
+              <span class="text-[11px] text-neutral-500 uppercase font-semibold">Suma Total Egresos</span>
+              <p id="egresosConceptoSumaTotal" class="text-lg font-mono font-extrabold text-neutral-900">$6,524,289.26</p>
+            </div>
+          </div>
+
+          <!-- Lista con barras de progreso de las 18 categorías -->
+          <div id="egresosConceptoContainer" class="mt-4 space-y-3 max-h-[460px] overflow-y-auto pr-2">
+            <!-- Inyectado dinámicamente por JS con las 18 categorías exactas -->
+          </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-t border-neutral-200 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-600">
+          <span>
+            <strong>Capital Humano (Nómina + Sueldos + Subcontratos):</strong>
+            <span id="egresosCapitalHumano" class="font-mono font-bold text-neutral-900">$4,330,846.77 (66.38%)</span>
+          </span>
+          <span id="egresosRetiroSociosFooter" class="font-mono font-semibold text-[#9E1B32]">
+            Retiro Socios: $411,691.49 (6.31%)
+          </span>
+        </div>
+      </div>
+
+      <!-- Ingresos por Tipo de Proyecto (CASA, DESARROLLOS, SERVICIOS) -->
+      <div class="lg:col-span-5 bg-white rounded-2xl border border-neutral-200/90 shadow-sm p-5 sm:p-6 flex flex-col justify-between space-y-5">
+        <div>
+          <div class="flex items-center justify-between pb-4 border-b border-neutral-200">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9E1B32]">CARTERA Y FACTURACIÓN 2026</p>
+              <h2 class="text-base sm:text-lg font-bold text-neutral-900 mt-0.5">Ingresos por Tipo de Proyecto</h2>
+            </div>
+            <div class="text-right">
+              <span class="text-[11px] text-neutral-500 uppercase font-semibold">Cartera Total</span>
+              <p id="tipologiaCarteraTotalHeader" class="text-lg font-mono font-extrabold text-neutral-900">$7,699,292.36</p>
+            </div>
+          </div>
+
+          <!-- Barras Apiladas Cobrado vs Por Cobrar por Tipología -->
+          <div id="tipologiaBarsContainer" class="mt-4 space-y-4">
+            <!-- Inyectado por JS -->
+          </div>
+
+          <!-- Gráfico de Dona / Barras de Tipología -->
+          <div class="relative h-44 w-full mt-5">
+            <canvas id="chartTipologia"></canvas>
+          </div>
+        </div>
+
+        <!-- Tabla exacta de Ingresos por Tipo de Proyecto -->
+        <div class="overflow-x-auto border border-neutral-200 rounded-xl">
+          <table class="w-full text-left border-collapse text-xs font-mono">
+            <thead>
+              <tr class="bg-[#141413] text-white text-[10px] font-sans uppercase tracking-wider">
+                <th class="py-2.5 px-3">Tipo Proyecto</th>
+                <th class="py-2.5 px-3 text-right">Cobrado 2026</th>
+                <th class="py-2.5 px-3 text-right">Por Cobrar</th>
+                <th class="py-2.5 px-3 text-right">Total</th>
+                <th class="py-2.5 px-3 text-right">%</th>
+              </tr>
+            </thead>
+            <tbody id="tipologiaTableBody" class="divide-y divide-neutral-200">
+              <!-- Inyectado por JS -->
+            </tbody>
+            <tfoot id="tipologiaTableFoot" class="bg-neutral-100 font-bold text-neutral-900 border-t border-neutral-300">
+              <tr>
+                <td class="py-2.5 px-3 font-sans">TOTAL</td>
+                <td class="py-2.5 px-3 text-right text-emerald-700">$5,616,929.30</td>
+                <td class="py-2.5 px-3 text-right text-[#9E1B32]">$2,082,363.06</td>
+                <td class="py-2.5 px-3 text-right">$7,699,292.36</td>
+                <td class="py-2.5 px-3 text-right">100.00%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 5. DESGLOSE DE PROYECTOS DE LA META DE COBRO 4T2026 -->
+    <section class="bg-white rounded-2xl border border-neutral-200/90 shadow-sm overflow-hidden">
+      <div class="p-5 sm:p-6 border-b border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9E1B32]">CARTERA PENDIENTE 4T2026 POR PROYECTO</p>
+          <h2 class="text-base sm:text-lg font-bold text-neutral-900 mt-0.5">
+            Meta de Cobro 4T2026 (<span id="projTitleMeta">$2,496,078.06</span>) · Desglose por Proyecto
+          </h2>
+          <p class="text-xs text-neutral-500">
+            Monto ya cobrado en 4T2026: <strong id="projDescCobrado">$218,515.00</strong> · Saldo pendiente por cobrar: <strong id="projDescPorCobrar">$2,277,563.06</strong> (Ajustado en tiempo real según el simulador).
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input
+              id="projectSearch"
+              type="text"
+              placeholder="Buscar proyecto (ej. PINK)..."
+              oninput="renderProjectsTable()"
+              class="pl-8 pr-3 py-1.5 text-xs bg-neutral-50 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9E1B32]"
+            />
+          </div>
+
+          <select
+            id="projectFilterSelect"
+            onchange="renderProjectsTable()"
+            class="text-xs font-medium bg-neutral-50 border border-neutral-300 rounded-lg px-3 py-1.5 text-neutral-700 focus:outline-none focus:ring-2 focus:ring-[#9E1B32]"
+          >
+            <option value="ACTIVE">Con Saldo Pendiente (21 proyectos)</option>
+            <option value="ALL">Todos los Proyectos en Hoja (46 proyectos)</option>
+            <option value="PAID">Proyectos en $0.00 (25 proyectos)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-left border-collapse">
+          <thead class="sticky top-0 bg-neutral-100 border-b border-neutral-200 text-[11px] font-semibold uppercase tracking-wider text-neutral-600 z-10">
+            <tr>
+              <th class="py-3 px-4">#</th>
+              <th class="py-3 px-4">Proyecto (Hoja Tabla Dinámica)</th>
+              <th class="py-3 px-4 text-right">Por Cobrar 4T2026 (Base)</th>
+              <th class="py-3 px-4 text-right">Cobro Simulado (<span id="colSimPctLabel">100%</span>)</th>
+              <th class="py-3 px-4 text-right">% del Por Cobrar</th>
+              <th class="py-3 px-4 text-center">Estatus</th>
+            </tr>
+          </thead>
+          <tbody id="projectsTableBody" class="divide-y divide-neutral-200/70 text-xs sm:text-sm font-mono">
+            <!-- Inyectado por JS -->
+          </tbody>
+          <tfoot id="projectsTableFoot" class="sticky bottom-0 bg-[#141413] text-white font-mono text-xs sm:text-sm font-bold">
+            <!-- Inyectado por JS -->
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. TABLA DINÁMICA MENSUAL INTERACTIVA (RESUMEN ANUAL POR MES) -->
+    <section class="bg-white rounded-2xl border border-neutral-200/90 shadow-sm overflow-hidden">
+      <div class="p-5 sm:p-6 border-b border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9E1B32]">RESUMEN ANUAL POR MES · TABLA DINÁMICA CONTABILIDAD</p>
+          <h2 class="text-base sm:text-lg font-bold text-neutral-900 mt-0.5">Auditoría Mensual de Ingresos, Egresos y Saldo Operativo</h2>
+          <p class="text-xs text-neutral-500">Haz clic en cualquier encabezado de columna para ordenar ascendente o descendentemente.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input
+              id="monthSearch"
+              type="text"
+              placeholder="Filtrar mes..."
+              oninput="renderMonthlyTable()"
+              class="pl-8 pr-3 py-1.5 text-xs bg-neutral-50 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9E1B32]"
+            />
+          </div>
+
+          <select
+            id="tableQuarterSelect"
+            onchange="setQuarterFilter(this.value)"
+            class="text-xs font-medium bg-neutral-50 border border-neutral-300 rounded-lg px-3 py-1.5 text-neutral-700 focus:outline-none focus:ring-2 focus:ring-[#9E1B32]"
+          >
+            <option value="ALL">Todo el Año (Ene - Dic)</option>
+            <option value="Q1">Q1 (Ene - Mar)</option>
+            <option value="Q2">Q2 (Abr - Jun)</option>
+            <option value="Q3">Q3 (Jul - Sep)</option>
+            <option value="Q4">Q4 (Oct - Dic)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#141413] text-white text-[11px] font-semibold uppercase tracking-wider select-none">
+              <th onclick="sortMonthlyTable('id')" class="py-3.5 px-4 cursor-pointer hover:bg-neutral-800 transition">
+                <div class="flex items-center gap-1.5"><span>Mes</span><span id="sort-id" class="text-emerald-400">▲</span></div>
+              </th>
+              <th class="py-3.5 px-4">Trimestre</th>
+              <th onclick="sortMonthlyTable('ingresos')" class="py-3.5 px-4 text-right cursor-pointer hover:bg-neutral-800 transition">
+                <div class="flex items-center justify-end gap-1.5"><span>Ingresos ($)</span><span id="sort-ingresos" class="text-emerald-400"></span></div>
+              </th>
+              <th onclick="sortMonthlyTable('egresos')" class="py-3.5 px-4 text-right cursor-pointer hover:bg-neutral-800 transition">
+                <div class="flex items-center justify-end gap-1.5"><span>Egresos ($)</span><span id="sort-egresos" class="text-emerald-400"></span></div>
+              </th>
+              <th onclick="sortMonthlyTable('total')" class="py-3.5 px-4 text-right cursor-pointer hover:bg-neutral-800 transition">
+                <div class="flex items-center justify-end gap-1.5"><span>Saldo Mensual ($)</span><span id="sort-total" class="text-emerald-400"></span></div>
+              </th>
+              <th onclick="sortMonthlyTable('acumulado')" class="py-3.5 px-4 text-right cursor-pointer hover:bg-neutral-800 transition">
+                <div class="flex items-center justify-end gap-1.5"><span>Saldo Acumulado ($)</span><span id="sort-acumulado" class="text-emerald-400"></span></div>
+              </th>
+              <th class="py-3.5 px-4 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="monthlyTableBody" class="divide-y divide-neutral-200/80 text-xs sm:text-sm font-mono">
+            <!-- Inyectado por JS -->
+          </tbody>
+          <tfoot id="monthlyTableFoot" class="bg-neutral-100 border-t-2 border-neutral-300 font-mono text-xs sm:text-sm font-bold text-neutral-900">
+            <!-- Inyectado por JS -->
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center sm:flex sm:items-center sm:justify-between text-xs text-neutral-500 border-t border-neutral-300/80 mt-6">
+    <p>© 2026 ESENCIAL Studio · Datos extraídos exclusivamente de la hoja <strong>"Tabla Dinámica Contabilidad"</strong></p>
+    <p class="mt-1 sm:mt-0 font-mono">Cifras en Pesos Mexicanos (MXN)</p>
+  </footer>
+
+  <!-- ================= JAVASCRIPT: DATOS EXACTOS Y LÓGICA INTERACTIVA ================= -->
+  <script>
+    /**
+     * ============================================================================
+     * 1. DATOS EXACTOS DE LA HOJA "Tabla Dinámica Contabilidad" (Google Sheets)
+     * ============================================================================
+     */
+
+    // A) RESUMEN ANUAL POR MES (Filas 2 a 16, Columnas M-P)
+    const RESUMEN_MENSUAL = [
+      { id: 1,  mes: 'Enero',      abrev: 'Ene', quarter: 'Q1', ingresos: 315700.00,  egresos: 428089.97, total: -112389.97 },
+      { id: 2,  mes: 'Febrero',    abrev: 'Feb', quarter: 'Q1', ingresos: 613350.00,  egresos: 535012.22, total: 78337.78 },
+      { id: 3,  mes: 'Marzo',      abrev: 'Mar', quarter: 'Q1', ingresos: 774965.00,  egresos: 695081.11, total: 79883.89 },
+      { id: 4,  mes: 'Abril',      abrev: 'Abr', quarter: 'Q2', ingresos: 475446.00,  egresos: 608677.83, total: -133231.83 },
+      { id: 5,  mes: 'Mayo',       abrev: 'May', quarter: 'Q2', ingresos: 622508.60,  egresos: 618119.94, total: 4388.66 },
+      { id: 6,  mes: 'Junio',      abrev: 'Jun', quarter: 'Q2', ingresos: 897418.91,  egresos: 936202.44, total: -38783.53 },
+      { id: 7,  mes: 'Julio',      abrev: 'Jul', quarter: 'Q3', ingresos: 631902.00,  egresos: 567540.61, total: 64361.39 },
+      { id: 8,  mes: 'Agosto',     abrev: 'Ago', quarter: 'Q3', ingresos: 1298182.00, egresos: 928157.26, total: 370024.74 },
+      { id: 9,  mes: 'Septiembre', abrev: 'Sep', quarter: 'Q3', ingresos: 281484.60,  egresos: 674705.73, total: -393221.13 },
+      { id: 10, mes: 'Octubre',    abrev: 'Oct', quarter: 'Q4', ingresos: 789810.00,  egresos: 532702.15, total: 257107.85 },
+      { id: 11, mes: 'Noviembre',  abrev: 'Nov', quarter: 'Q4', ingresos: 0.00,       egresos: 0.00,      total: 0.00 },
+      { id: 12, mes: 'Diciembre',  abrev: 'Dic', quarter: 'Q4', ingresos: 0.00,       egresos: 0.00,      total: 0.00 }
+    ];
+
+    const RESUMEN_TOTALES_HOJA = {
+      ingresosTotal: 6700767.11,
+      egresosTotal: 6524289.26,
+      flujoNetoTotal: 176477.85,
+      ingresosPromedio: 690800.73,
+      egresosPromedio: 672607.14,
+      flujoNetoPromedio: 14706.49
+    };
+
+    // B) DISTRIBUCIÓN DE EGRESOS POR CONCEPTO (Tabla Dinámica Filas 1 a 21, Columnas G, J, K)
+    const EGRESOS_POR_CONCEPTO = [
+      { concepto: 'Nómina',                    monto: 2293510.38, pct: 35.15, grupo: 'Capital Humano' },
+      { concepto: 'Sueldos',                   monto: 1026700.00, pct: 15.74, grupo: 'Capital Humano' },
+      { concepto: 'Subcontratos',              monto: 1010636.39, pct: 15.49, grupo: 'Capital Humano' },
+      { concepto: 'Préstamos',                 monto: 505302.13,  pct: 7.74,  grupo: 'Pasivos y Financiamiento' },
+      { concepto: 'Retiro de utilidades',      monto: 411691.49,  pct: 6.31,  grupo: 'Socios' },
+      { concepto: 'Inversiones',               monto: 407788.63,  pct: 6.25,  grupo: 'Capital e Inversión' },
+      { concepto: 'Renta',                     monto: 389958.50,  pct: 5.98,  grupo: 'Gasto Fijo Operativo' },
+      { concepto: 'Comisiones',                monto: 96798.82,   pct: 1.48,  grupo: 'Operación General' },
+      { concepto: 'Publicidad y comunicación', monto: 91271.94,   pct: 1.40,  grupo: 'Operación General' },
+      { concepto: 'Financiamiento',            monto: 74264.90,   pct: 1.14,  grupo: 'Pasivos y Financiamiento' },
+      { concepto: 'Gastos Contables',          monto: 64069.78,   pct: 0.98,  grupo: 'Operación General' },
+      { concepto: 'Papelería',                 monto: 43252.24,   pct: 0.66,  grupo: 'Operación General' },
+      { concepto: 'Equipo de cómputo',         monto: 39207.85,   pct: 0.60,  grupo: 'Capital e Inversión' },
+      { concepto: 'Viáticos',                  monto: 34942.03,   pct: 0.54,  grupo: 'Operación General' },
+      { concepto: 'Mejoras de oficina',        monto: 23954.00,   pct: 0.37,  grupo: 'Capital e Inversión' },
+      { concepto: 'Renders',                   monto: 8000.00,    pct: 0.12,  grupo: 'Operación General' },
+      { concepto: 'Maquetas y Materiales',     monto: 2887.40,    pct: 0.04,  grupo: 'Operación General' },
+      { concepto: 'Impuestos',                 monto: 52.78,      pct: 0.00,  grupo: 'Operación General' }
+    ];
+    let SUMA_EGRESOS_TABLA_DINAMICA = 6524289.26;
+
+    // C) META DE COBRO 4T2026 Y DESGLOSE POR PROYECTO (Filas 24 a 75, Columnas L y M)
+    const META_4T2026 = {
+      metaTotal: 2496078.06,
+      cobrado: 218515.001,
+      porCobrar: 2277563.059
+    };
+
+    const PROYECTOS_4T2026 = [
+      { proyecto: 'PINK',                          porCobrar: 835811.929 },
+      { proyecto: 'VILLAS CELESTUN',               porCobrar: 216000.00 },
+      { proyecto: 'CASA GALIANA',                  porCobrar: 152775.00 },
+      { proyecto: 'GREEN AJUSTE',                  porCobrar: 116400.00 },
+      { proyecto: 'AMG PLAZA DORADA',              porCobrar: 106063.68 },
+      { proyecto: 'CASA CEIBA',                    porCobrar: 96000.00 },
+      { proyecto: 'LOCALES AC',                    porCobrar: 90000.00 },
+      { proyecto: 'EDIFICIO F',                    porCobrar: 80000.00 },
+      { proyecto: 'AJUSTE MARBELLO AMENIDADES',    porCobrar: 78800.00 },
+      { proyecto: 'CASA IC',                       porCobrar: 73080.00 },
+      { proyecto: 'EDIFICIO J',                    porCobrar: 71000.00 },
+      { proyecto: 'CASA CELESTUN',                 porCobrar: 70000.00 },
+      { proyecto: 'HUNXECTAMAN',                   porCobrar: 63250.00 },
+      { proyecto: 'LOCALES GM',                    porCobrar: 49117.45 },
+      { proyecto: 'EDIFICIO H',                    porCobrar: 47880.00 },
+      { proyecto: 'EDIFICIO I',                    porCobrar: 39995.00 },
+      { proyecto: 'CASA VILLAHERMOSA',             porCobrar: 36800.00 },
+      { proyecto: 'COZUMEL BEACH CLUB',            porCobrar: 24350.00 },
+      { proyecto: 'PRIVANZAS - PRIVADA 1 AJUSTES', porCobrar: 21250.00 },
+      { proyecto: 'EDIFICIO G - DC',               porCobrar: 11550.00 },
+      { proyecto: 'VILLAS BERRÓN',                 porCobrar: 0.00 },
+      { proyecto: 'VALLADOLID (APOSENTA)',         porCobrar: 0.00 },
+      { proyecto: 'TORRE MONTEJO',                 porCobrar: 0.00 },
+      { proyecto: 'RENDERS EXTRA PLANTAR 1',       porCobrar: 0.00 },
+      { proyecto: 'RENDERS EXTRA MARBELLO',        porCobrar: 0.00 },
+      { proyecto: 'PRIVANZAS',                     porCobrar: 0.00 },
+      { proyecto: 'PLAZA FIESTA AMG',              porCobrar: 0.00 },
+      { proyecto: 'PIONERA',                       porCobrar: 0.00 },
+      { proyecto: 'MODELO',                        porCobrar: 0.00 },
+      { proyecto: 'MASTERPLAN BERRÓN',             porCobrar: 0.00 },
+      { proyecto: 'MASTER PLAN PINK',              porCobrar: 0.00 },
+      { proyecto: 'MARBELLO',                      porCobrar: 0.00 },
+      { proyecto: 'LOCALES CERVANTES',             porCobrar: 0.00 },
+      { proyecto: 'GARCIA GINERES',                porCobrar: 0.00 },
+      { proyecto: 'COUNTRY LAKES',                 porCobrar: 0.00 },
+      { proyecto: 'COSTERA',                       porCobrar: 0.00 },
+      { proyecto: 'CONCEPTUAL - VILLAS CELESTÚN',  porCobrar: 0.00 },
+      { proyecto: 'Cholul AMG',                    porCobrar: 0.00 },
+      { proyecto: 'CASETA CARDENAL',               porCobrar: 0.00 },
+      { proyecto: 'CASA XAIBE',                    porCobrar: 0.00 },
+      { proyecto: 'CASA TMZ',                      porCobrar: 0.00 },
+      { proyecto: 'CASA CM',                       porCobrar: 0.00 },
+      { proyecto: 'CASA CAMPESTRE',                porCobrar: 0.00 },
+      { proyecto: 'BACALAR',                       porCobrar: 0.00 },
+      { proyecto: 'AJUSTES MARBELLO',              porCobrar: 0.00 },
+      { proyecto: 'DEPTOS. CHICXULUB',             porCobrar: -2560.00 }
+    ];
+
+    // D) INGRESOS POR TIPO DE PROYECTO (Filas 40 a 45, Columnas G-K)
+    const INGRESOS_POR_TIPOLOGIA = [
+      { tipo: 'DESARROLLOS', cobrado: 4425519.30, porCobrar: 1653708.059, total: 6079227.359, porcentaje: 78.96 },
+      { tipo: 'CASA',        cobrado: 1027850.00, porCobrar: 428655.00,   total: 1456505.00,  porcentaje: 18.92 },
+      { tipo: 'SERVICIOS',   cobrado: 163560.00,  porCobrar: 0.00,        total: 163560.00,   porcentaje: 2.12 }
+    ];
+
+    /**
+     * ============================================================================
+     * 2. ESTADO REACTIVO Y UTILIDADES DE FORMATO
+     * ============================================================================
+     */
+    const state = {
+      quarterFilter: 'ALL',
+      simEffectiveness: 100, // % de efectividad sobre el monto Por Cobrar 4T2026 ($2,277,563.06)
+      sortColumn: 'id',
+      sortDirection: 'asc'
+    };
+
+    let chartMensualInstance = null;
+    let chartFlujoAcumuladoInstance = null;
+    let chartMeta4TInstance = null;
+    let chartTipologiaInstance = null;
+
+    const formatMXN = (val) => {
+      const isNeg = val < -0.005;
+      const absVal = Math.abs(val);
+      const str = '$' + absVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return isNeg ? `-${str}` : str;
+    };
+
+    function getMonthlyDataWithRunningBalance() {
+      let running = 0;
+      return RESUMEN_MENSUAL.map((m) => {
+        running += m.total;
+        return {
+          ...m,
+          acumulado: Number(running.toFixed(2))
+        };
+      });
+    }
+
+    /**
+     * ============================================================================
+     * 3. RENDERIZADO DE COMPONENTES ESTÁTICOS/DINÁMICOS DE LA HOJA
+     * ============================================================================
+     */
+
+    // 3.1 Distribución de Egresos por Concepto (18 Categorías)
+    function renderEgresosPorConcepto() {
+      const container = document.getElementById('egresosConceptoContainer');
+      const maxMonto = EGRESOS_POR_CONCEPTO.length > 0 ? EGRESOS_POR_CONCEPTO[0].monto : 1;
+
+      const sumaTotalEl = document.getElementById('egresosConceptoSumaTotal');
+      if (sumaTotalEl) sumaTotalEl.textContent = formatMXN(SUMA_EGRESOS_TABLA_DINAMICA);
+
+      // Calcular Capital Humano y Retiro Socios dinámicamente
+      const capHumanoMonto = EGRESOS_POR_CONCEPTO
+        .filter(i => i.grupo === 'Capital Humano')
+        .reduce((a, b) => a + b.monto, 0);
+      const capHumanoPct = SUMA_EGRESOS_TABLA_DINAMICA > 0 ? (capHumanoMonto / SUMA_EGRESOS_TABLA_DINAMICA) * 100 : 0;
+      const capHumanoEl = document.getElementById('egresosCapitalHumano');
+      if (capHumanoEl) capHumanoEl.textContent = `${formatMXN(capHumanoMonto)} (${capHumanoPct.toFixed(2)}%)`;
+
+      const retiroItem = EGRESOS_POR_CONCEPTO.find(i => i.concepto.toLowerCase().includes('retiro'));
+      const retiroMonto = retiroItem ? retiroItem.monto : 0;
+      const retiroPct = retiroItem ? retiroItem.pct : 0;
+      const retiroFooterEl = document.getElementById('egresosRetiroSociosFooter');
+      if (retiroFooterEl) retiroFooterEl.textContent = `Retiro Socios: ${formatMXN(retiroMonto)} (${retiroPct.toFixed(2)}%)`;
+
+      const kpiRetiroEl = document.getElementById('kpiRetiroSocios');
+      if (kpiRetiroEl) kpiRetiroEl.textContent = `Retiro Socios: $${(retiroMonto / 1000).toFixed(1)}K`;
+
+      // Actualizar barra de Generación Real Total de Utilidad
+      const utilidadRealTotal = RESUMEN_TOTALES_HOJA.flujoNetoTotal + retiroMonto;
+      const barUtilTotalEl = document.getElementById('barUtilidadTotal');
+      const barUtilDesgEl = document.getElementById('barUtilidadDesglose');
+      if (barUtilTotalEl) barUtilTotalEl.textContent = formatMXN(utilidadRealTotal);
+      if (barUtilDesgEl) barUtilDesgEl.textContent = `(${formatMXN(RESUMEN_TOTALES_HOJA.flujoNetoTotal)} + ${formatMXN(retiroMonto)})`;
+
+      container.innerHTML = EGRESOS_POR_CONCEPTO.map((item) => {
+        const barWidth = Math.max(1.2, (item.monto / maxMonto) * 100);
+        const isRetiro = item.concepto.toLowerCase().includes('retiro');
+        const barColor = isRetiro ? 'bg-[#9E1B32]' : 'bg-neutral-900';
+        const titleColor = isRetiro ? 'text-[#9E1B32] font-bold' : 'text-neutral-800 font-semibold';
+
+        return `
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="${titleColor}">${item.concepto}</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-500">${item.grupo}</span>
+              </div>
+              <span class="font-mono font-semibold text-neutral-900">
+                ${formatMXN(item.monto)} <span class="text-neutral-500 font-normal">(${item.pct.toFixed(2)}%)</span>
+              </span>
+            </div>
+            <div class="w-full bg-neutral-200/80 h-2 rounded-full overflow-hidden">
+              <div class="${barColor} h-full rounded-full" style="width: ${barWidth.toFixed(1)}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 3.2 Ingresos por Tipo de Proyecto (Barras y Tabla)
+    function renderIngresosPorTipologia() {
+      const barsContainer = document.getElementById('tipologiaBarsContainer');
+      barsContainer.innerHTML = INGRESOS_POR_TIPOLOGIA.map((item) => {
+        const cobradoPct = item.total > 0 ? (item.cobrado / item.total) * 100 : 0;
+        const porCobrarPct = item.total > 0 ? (item.porCobrar / item.total) * 100 : 0;
+
+        return `
+          <div class="space-y-1.5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-1">
+              <span class="font-bold text-neutral-900">
+                ${item.tipo} <span class="font-normal text-neutral-500">(${item.porcentaje.toFixed(2)}% cartera · ${formatMXN(item.total)})</span>
+              </span>
+              <span class="font-mono text-[11px]">
+                <strong class="text-emerald-700">Cobrado: ${cobradoPct.toFixed(2)}%</strong>
+                <span class="text-neutral-400 mx-1">·</span>
+                <strong class="text-[#9E1B32]">Por Cobrar: ${porCobrarPct.toFixed(2)}%</strong>
+              </span>
+            </div>
+            <div class="w-full h-3 rounded-full bg-neutral-200 overflow-hidden flex">
+              <div class="bg-neutral-900 h-full" style="width: ${cobradoPct}%" title="Cobrado: ${formatMXN(item.cobrado)}"></div>
+              <div class="bg-[#9E1B32] h-full" style="width: ${porCobrarPct}%" title="Por Cobrar: ${formatMXN(item.porCobrar)}"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const sumCobrado = INGRESOS_POR_TIPOLOGIA.reduce((a, b) => a + b.cobrado, 0);
+      const sumPorCobrar = INGRESOS_POR_TIPOLOGIA.reduce((a, b) => a + b.porCobrar, 0);
+      const sumCartera = sumCobrado + sumPorCobrar;
+
+      const headerCarteraEl = document.getElementById('tipologiaCarteraTotalHeader');
+      if (headerCarteraEl) headerCarteraEl.textContent = formatMXN(sumCartera);
+
+      const barCarteraTotalEl = document.getElementById('barCarteraTotal');
+      const barCarteraDesgEl = document.getElementById('barCarteraDesglose');
+      if (barCarteraTotalEl) barCarteraTotalEl.textContent = formatMXN(sumCartera);
+      if (barCarteraDesgEl) barCarteraDesgEl.textContent = `(Cobrado: ${formatMXN(sumCobrado)} · Por Cobrar: ${formatMXN(sumPorCobrar)})`;
+
+      const orderedForTable = [...INGRESOS_POR_TIPOLOGIA].sort((a, b) => a.tipo.localeCompare(b.tipo));
+      const tbody = document.getElementById('tipologiaTableBody');
+      tbody.innerHTML = orderedForTable.map((item) => `
+        <tr class="hover:bg-neutral-50 transition">
+          <td class="py-2.5 px-3 font-sans font-bold text-neutral-900">${item.tipo}</td>
+          <td class="py-2.5 px-3 text-right text-emerald-700 font-medium">${formatMXN(item.cobrado)}</td>
+          <td class="py-2.5 px-3 text-right text-[#9E1B32] font-medium">${formatMXN(item.porCobrar)}</td>
+          <td class="py-2.5 px-3 text-right font-bold text-neutral-900">${formatMXN(item.total)}</td>
+          <td class="py-2.5 px-3 text-right text-neutral-600">${item.porcentaje.toFixed(2)}%</td>
+        </tr>
+      `).join('');
+
+      const tfoot = document.getElementById('tipologiaTableFoot');
+      if (tfoot) {
+        tfoot.innerHTML = `
+          <tr>
+            <td class="py-2.5 px-3 font-sans">TOTAL</td>
+            <td class="py-2.5 px-3 text-right text-emerald-700">${formatMXN(sumCobrado)}</td>
+            <td class="py-2.5 px-3 text-right text-[#9E1B32]">${formatMXN(sumPorCobrar)}</td>
+            <td class="py-2.5 px-3 text-right">${formatMXN(sumCartera)}</td>
+            <td class="py-2.5 px-3 text-right">100.00%</td>
+          </tr>
+        `;
+      }
+
+      if (chartTipologiaInstance) {
+        chartTipologiaInstance.data.labels = INGRESOS_POR_TIPOLOGIA.map(t => t.tipo);
+        chartTipologiaInstance.data.datasets[0].data = INGRESOS_POR_TIPOLOGIA.map(t => t.cobrado);
+        chartTipologiaInstance.data.datasets[1].data = INGRESOS_POR_TIPOLOGIA.map(t => t.porCobrar);
+        chartTipologiaInstance.update();
+      }
+    }
+
+    // 3.3 Actualización de KPIs Superiores según Filtro Trimestral
+    function updateKPIs() {
+      const monthly = getMonthlyDataWithRunningBalance();
+      const filtered = state.quarterFilter === 'ALL'
+        ? monthly
+        : monthly.filter(m => m.quarter === state.quarterFilter);
+
+      if (state.quarterFilter === 'ALL') {
+        document.getElementById('kpiIngresosTotal').textContent = formatMXN(RESUMEN_TOTALES_HOJA.ingresosTotal);
+        document.getElementById('kpiIngresosProm').textContent = `${formatMXN(RESUMEN_TOTALES_HOJA.ingresosPromedio)} / mes`;
+        document.getElementById('kpiEgresosTotal').textContent = formatMXN(RESUMEN_TOTALES_HOJA.egresosTotal);
+        document.getElementById('kpiEgresosProm').textContent = formatMXN(RESUMEN_TOTALES_HOJA.egresosPromedio);
+        document.getElementById('kpiFlujoNeto').textContent = '+' + formatMXN(RESUMEN_TOTALES_HOJA.flujoNetoTotal);
+        document.getElementById('kpiFlujoNeto').className = 'text-2xl sm:text-3xl font-extrabold font-mono text-emerald-700 mt-2';
+        const margenAnual = (RESUMEN_TOTALES_HOJA.flujoNetoTotal / RESUMEN_TOTALES_HOJA.ingresosTotal) * 100;
+        document.getElementById('kpiMargenNeto').textContent = `Margen Neto: ${margenAnual.toFixed(2)}%`;
+      } else {
+        const sumIng = filtered.reduce((a, b) => a + b.ingresos, 0);
+        const sumEgr = filtered.reduce((a, b) => a + b.egresos, 0);
+        const sumTot = sumIng - sumEgr;
+        const activeMonths = filtered.filter(m => m.ingresos > 0 || m.egresos > 0).length || filtered.length;
+        const margenQ = sumIng > 0 ? (sumTot / sumIng) * 100 : 0;
+
+        document.getElementById('kpiIngresosTotal').textContent = formatMXN(sumIng);
+        document.getElementById('kpiIngresosProm').textContent = `${formatMXN(sumIng / activeMonths)} / mes (${state.quarterFilter})`;
+        document.getElementById('kpiEgresosTotal').textContent = formatMXN(sumEgr);
+        document.getElementById('kpiEgresosProm').textContent = formatMXN(sumEgr / activeMonths);
+        document.getElementById('kpiFlujoNeto').textContent = (sumTot >= 0 ? '+' : '') + formatMXN(sumTot);
+        document.getElementById('kpiFlujoNeto').className = `text-2xl sm:text-3xl font-extrabold font-mono mt-2 ${sumTot >= 0 ? 'text-emerald-700' : 'text-[#9E1B32]'}`;
+        document.getElementById('kpiMargenNeto').textContent = `Margen ${state.quarterFilter}: ${margenQ.toFixed(2)}%`;
+      }
+    }
+
+    // 3.4 Simulador 4T2026 y Tabla de Proyectos
+    function updateSimulation(val) {
+      const pct = Math.min(120, Math.max(0, Number(val)));
+      state.simEffectiveness = pct;
+      document.getElementById('simSlider').value = pct;
+      document.getElementById('simInput').value = pct;
+
+      const factor = pct / 100;
+      const porCobrarSimulado = META_4T2026.porCobrar * factor;
+      const totalCobro4TSimulado = META_4T2026.cobrado + porCobrarSimulado;
+      const cumplimientoMetaPct = META_4T2026.metaTotal > 0 ? (totalCobro4TSimulado / META_4T2026.metaTotal) * 100 : 0;
+      const cobradoRealPct = META_4T2026.metaTotal > 0 ? (META_4T2026.cobrado / META_4T2026.metaTotal) * 100 : 0;
+      const diferenciaMeta = totalCobro4TSimulado - META_4T2026.metaTotal;
+
+      // Actualizar KPI 4 y Tarjetas del Simulador con los datos en vivo de META_4T2026
+      const kpiMetaTotalEl = document.getElementById('kpiMeta4TTotal');
+      if (kpiMetaTotalEl) kpiMetaTotalEl.textContent = formatMXN(META_4T2026.metaTotal);
+      const kpiMetaBadgeEl = document.getElementById('kpiMetaPctBadge');
+      if (kpiMetaBadgeEl) kpiMetaBadgeEl.textContent = `${cobradoRealPct.toFixed(2)}% Cobrado`;
+      const kpiCobradoBarEl = document.getElementById('kpiMetaCobradoBar');
+      if (kpiCobradoBarEl) kpiCobradoBarEl.style.width = `${Math.min(100, Math.max(0, cobradoRealPct))}%`;
+      const kpiCobradoLabelEl = document.getElementById('kpiCobrado4TLabel');
+      if (kpiCobradoLabelEl) kpiCobradoLabelEl.textContent = `Cobrado: ${formatMXN(META_4T2026.cobrado)}`;
+
+      const simYaCobradoValEl = document.getElementById('simYaCobradoVal');
+      if (simYaCobradoValEl) simYaCobradoValEl.textContent = formatMXN(META_4T2026.cobrado);
+      const simYaCobradoPctEl = document.getElementById('simYaCobradoPct');
+      if (simYaCobradoPctEl) simYaCobradoPctEl.textContent = `${cobradoRealPct.toFixed(2)}% de la meta`;
+
+      // Actualizar textos descriptivos de Meta 4T2026 en secciones 3 y 5
+      ['simTitleMeta', 'simDescMeta', 'projTitleMeta'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = formatMXN(META_4T2026.metaTotal);
+      });
+      ['simDescCobrado', 'projDescCobrado'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = formatMXN(META_4T2026.cobrado);
+      });
+      ['simDescPorCobrar', 'simLabelPorCobrar', 'projDescPorCobrar'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = formatMXN(META_4T2026.porCobrar);
+      });
+
+      document.getElementById('simPorCobrarVal').textContent = formatMXN(porCobrarSimulado);
+      document.getElementById('simPorCobrarSub').textContent = `${pct}% de ${formatMXN(META_4T2026.porCobrar)}`;
+      document.getElementById('simTotal4TVal').textContent = formatMXN(totalCobro4TSimulado);
+      document.getElementById('simBrechaMeta').textContent = `${cumplimientoMetaPct.toFixed(1)}% de Meta (${diferenciaMeta >= 0 ? '+' : ''}${formatMXN(diferenciaMeta)})`;
+
+      document.getElementById('headerSimStatus').textContent = `Sim 4T: ${pct}% (${formatMXN(totalCobro4TSimulado)})`;
+      document.getElementById('kpiPorCobrarLabel').textContent = `Por Cobrar: ${formatMXN(porCobrarSimulado)}`;
+      document.getElementById('kpiMetaSimBar').style.width = `${Math.min(100 - cobradoRealPct, (porCobrarSimulado / META_4T2026.metaTotal) * 100)}%`;
+
+      const tagEl = document.getElementById('simChartTag');
+      if (cumplimientoMetaPct >= 99.9) {
+        tagEl.textContent = `Meta Cumplida (${cumplimientoMetaPct.toFixed(1)}%)`;
+        tagEl.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800';
+      } else if (cumplimientoMetaPct >= 80) {
+        tagEl.textContent = `Avance Moderado (${cumplimientoMetaPct.toFixed(1)}%)`;
+        tagEl.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800';
+      } else {
+        tagEl.textContent = `Déficit Cobranza (${cumplimientoMetaPct.toFixed(1)}%)`;
+        tagEl.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-rose-100 text-rose-800';
+      }
+
+      document.getElementById('colSimPctLabel').textContent = `${pct}%`;
+
+      renderProjectsTable();
+      updateMeta4TChart(porCobrarSimulado, totalCobro4TSimulado);
+    }
+
+    function renderProjectsTable() {
+      const query = document.getElementById('projectSearch').value.trim().toLowerCase();
+      const filterMode = document.getElementById('projectFilterSelect').value;
+      const factor = state.simEffectiveness / 100;
+
+      const filtered = PROYECTOS_4T2026.filter((p) => {
+        const matchText = !query || p.proyecto.toLowerCase().includes(query);
+        if (!matchText) return false;
+        if (filterMode === 'ACTIVE') return Math.abs(p.porCobrar) > 0.001;
+        if (filterMode === 'PAID') return Math.abs(p.porCobrar) <= 0.001;
+        return true;
+      });
+
+      const tbody = document.getElementById('projectsTableBody');
+      tbody.innerHTML = filtered.map((p, idx) => {
+        const simMonto = p.porCobrar * factor;
+        const sharePct = (p.porCobrar / META_4T2026.porCobrar) * 100;
+
+        let badge = '';
+        if (p.porCobrar > 0) {
+          badge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold bg-amber-50 text-amber-800 border border-amber-200">Por Cobrar 4T</span>';
+        } else if (p.porCobrar < 0) {
+          badge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold bg-rose-50 text-rose-700 border border-rose-200">Saldo a Favor / Ajuste</span>';
+        } else {
+          badge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Liquidado ($0)</span>';
+        }
+
+        return `
+          <tr class="hover:bg-neutral-50 transition">
+            <td class="py-2.5 px-4 text-neutral-400">${idx + 1}</td>
+            <td class="py-2.5 px-4 font-sans font-semibold text-neutral-900">${p.proyecto}</td>
+            <td class="py-2.5 px-4 text-right font-medium ${p.porCobrar < 0 ? 'text-rose-600' : 'text-neutral-900'}">${formatMXN(p.porCobrar)}</td>
+            <td class="py-2.5 px-4 text-right font-bold ${simMonto < 0 ? 'text-rose-600' : 'text-emerald-700'}">${formatMXN(simMonto)}</td>
+            <td class="py-2.5 px-4 text-right text-neutral-500">${sharePct.toFixed(2)}%</td>
+            <td class="py-2.5 px-4 text-center">${badge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const sumBase = filtered.reduce((a, b) => a + b.porCobrar, 0);
+      const sumSim = sumBase * factor;
+      const sumPct = (sumBase / META_4T2026.porCobrar) * 100;
+
+      document.getElementById('projectsTableFoot').innerHTML = `
+        <tr>
+          <td class="py-3 px-4 font-sans" colspan="2">SUMA (${filtered.length} proyectos mostrados)</td>
+          <td class="py-3 px-4 text-right text-amber-300">${formatMXN(sumBase)}</td>
+          <td class="py-3 px-4 text-right text-emerald-400">${formatMXN(sumSim)}</td>
+          <td class="py-3 px-4 text-right text-neutral-300">${sumPct.toFixed(2)}%</td>
+          <td class="py-3 px-4 text-center font-sans text-xs text-neutral-400">Meta Total: ${formatMXN(META_4T2026.metaTotal)}</td>
+        </tr>
+      `;
+    }
+
+    /**
+     * ============================================================================
+     * 4. TABLA MENSUAL INTERACTIVA (RESUMEN ANUAL)
+     * ============================================================================
+     */
+    function renderMonthlyTable() {
+      const allMonths = getMonthlyDataWithRunningBalance();
+      const query = document.getElementById('monthSearch').value.trim().toLowerCase();
+
+      let rows = allMonths.filter((m) => {
+        const matchQ = state.quarterFilter === 'ALL' || m.quarter === state.quarterFilter;
+        const matchSearch = !query || m.mes.toLowerCase().includes(query) || m.quarter.toLowerCase().includes(query);
+        return matchQ && matchSearch;
+      });
+
+      rows.sort((a, b) => {
+        const vA = a[state.sortColumn];
+        const vB = b[state.sortColumn];
+        if (vA < vB) return state.sortDirection === 'asc' ? -1 : 1;
+        if (vA > vB) return state.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      ['id', 'ingresos', 'egresos', 'total', 'acumulado'].forEach((col) => {
+        const el = document.getElementById(`sort-${col}`);
+        if (el) {
+          el.textContent = state.sortColumn === col ? (state.sortDirection === 'asc' ? '▲' : '▼') : '';
+        }
+      });
+
+      const tbody = document.getElementById('monthlyTableBody');
+      tbody.innerHTML = rows.map((r) => {
+        const isSinMov = r.ingresos === 0 && r.egresos === 0;
+        const isPos = r.total >= 0;
+
+        let badgeHtml = '';
+        if (isSinMov) {
+          badgeHtml = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-semibold bg-neutral-100 text-neutral-500 border border-neutral-200">POR EJECUTAR ($0)</span>';
+        } else if (isPos) {
+          badgeHtml = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">SUPERÁVIT</span>';
+        } else {
+          badgeHtml = '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold bg-rose-50 text-[#9E1B32] border border-rose-200">DÉFICIT</span>';
+        }
+
+        return `
+          <tr class="hover:bg-neutral-50 transition ${isSinMov ? 'opacity-60' : ''}">
+            <td class="py-3.5 px-4 font-sans font-bold text-neutral-900">${r.mes}</td>
+            <td class="py-3.5 px-4 font-sans">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-neutral-100 text-neutral-700">${r.quarter}</span>
+            </td>
+            <td class="py-3.5 px-4 text-right font-medium text-neutral-900">${formatMXN(r.ingresos)}</td>
+            <td class="py-3.5 px-4 text-right font-medium text-neutral-700">${formatMXN(r.egresos)}</td>
+            <td class="py-3.5 px-4 text-right font-bold ${isSinMov ? 'text-neutral-400' : isPos ? 'text-emerald-700' : 'text-[#9E1B32]'}">
+              ${!isSinMov && isPos ? '+' : ''}${formatMXN(r.total)}
+            </td>
+            <td class="py-3.5 px-4 text-right font-semibold text-neutral-800">${formatMXN(r.acumulado)}</td>
+            <td class="py-3.5 px-4 text-center">${badgeHtml}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const sumIng = rows.reduce((a, b) => a + b.ingresos, 0);
+      const sumEgr = rows.reduce((a, b) => a + b.egresos, 0);
+      const sumTot = sumIng - sumEgr;
+      const lastAcum = rows.length > 0 ? rows[rows.length - 1].acumulado : 0;
+
+      const tfoot = document.getElementById('monthlyTableFoot');
+      tfoot.innerHTML = `
+        <tr class="bg-[#141413] text-white">
+          <td class="py-3.5 px-4 font-sans font-bold" colspan="2">TOTAL (${rows.length} meses)</td>
+          <td class="py-3.5 px-4 text-right text-emerald-400">${formatMXN(sumIng)}</td>
+          <td class="py-3.5 px-4 text-right text-rose-300">${formatMXN(sumEgr)}</td>
+          <td class="py-3.5 px-4 text-right ${sumTot >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+            ${sumTot >= 0 ? '+' : ''}${formatMXN(sumTot)}
+          </td>
+          <td class="py-3.5 px-4 text-right text-neutral-200">${formatMXN(lastAcum)}</td>
+          <td class="py-3.5 px-4 text-center font-sans text-[11px] text-emerald-300">SUPERÁVIT</td>
+        </tr>
+        <tr class="bg-neutral-100 text-neutral-700 text-xs">
+          <td class="py-2.5 px-4 font-sans font-semibold" colspan="2">PROMEDIO HOJA CONTABILIDAD</td>
+          <td class="py-2.5 px-4 text-right">${formatMXN(RESUMEN_TOTALES_HOJA.ingresosPromedio)}</td>
+          <td class="py-2.5 px-4 text-right">${formatMXN(RESUMEN_TOTALES_HOJA.egresosPromedio)}</td>
+          <td class="py-2.5 px-4 text-right font-bold text-emerald-700">+${formatMXN(RESUMEN_TOTALES_HOJA.flujoNetoPromedio)}</td>
+          <td class="py-2.5 px-4 text-right text-neutral-400">—</td>
+          <td class="py-2.5 px-4 text-center font-sans text-[11px] text-neutral-500">Promedio Operativo</td>
+        </tr>
+      `;
+    }
+
+    /**
+     * ============================================================================
+     * 5. GRÁFICOS INTERACTIVOS CON CHART.JS
+     * ============================================================================
+     */
+    function initOrUpdateCharts() {
+      const allMonths = getMonthlyDataWithRunningBalance();
+      const filtered = state.quarterFilter === 'ALL'
+        ? allMonths
+        : allMonths.filter(m => m.quarter === state.quarterFilter);
+
+      const labels = filtered.map(m => m.abrev);
+      const ingresosData = filtered.map(m => m.ingresos);
+      const egresosData = filtered.map(m => m.egresos);
+      const saldoData = filtered.map(m => m.total);
+      const acumData = filtered.map(m => m.acumulado);
+
+      // 1. Gráfico Mensual Ingresos vs Egresos + Línea Saldo
+      const ctx1 = document.getElementById('chartMensual').getContext('2d');
+      if (chartMensualInstance) {
+        chartMensualInstance.data.labels = labels;
+        chartMensualInstance.data.datasets[0].data = saldoData;
+        chartMensualInstance.data.datasets[1].data = ingresosData;
+        chartMensualInstance.data.datasets[2].data = egresosData;
+        chartMensualInstance.update();
+      } else {
+        chartMensualInstance = new Chart(ctx1, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              {
+                type: 'line',
+                label: 'Saldo Mensual',
+                data: saldoData,
+                borderColor: '#141413',
+                backgroundColor: '#141413',
+                borderWidth: 2.2,
+                pointRadius: 4,
+                tension: 0.3,
+                order: 0
+              },
+              {
+                type: 'bar',
+                label: 'Ingresos',
+                data: ingresosData,
+                backgroundColor: '#059669',
+                borderRadius: 5,
+                barPercentage: 0.72,
+                categoryPercentage: 0.76,
+                order: 1
+              },
+              {
+                type: 'bar',
+                label: 'Egresos',
+                data: egresosData,
+                backgroundColor: '#9E1B32',
+                borderRadius: 5,
+                barPercentage: 0.72,
+                categoryPercentage: 0.76,
+                order: 2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#141413',
+                padding: 12,
+                bodyFont: { family: 'JetBrains Mono', size: 12 },
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${formatMXN(ctx.parsed.y)}`
+                }
+              }
+            },
+            scales: {
+              x: { grid: { display: false } },
+              y: {
+                grid: { color: '#E5E4DF' },
+                ticks: {
+                  font: { family: 'JetBrains Mono', size: 11 },
+                  callback: (v) => '$' + (v / 1000).toLocaleString('en-US') + 'K'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // 2. Gráfico Flujo Acumulado y Saldo Mensual
+      const ctx2 = document.getElementById('chartFlujoAcumulado').getContext('2d');
+      const barColors = saldoData.map(v => v >= 0 ? 'rgba(5, 150, 105, 0.75)' : 'rgba(158, 27, 50, 0.8)');
+
+      if (chartFlujoAcumuladoInstance) {
+        chartFlujoAcumuladoInstance.data.labels = labels;
+        chartFlujoAcumuladoInstance.data.datasets[0].data = acumData;
+        chartFlujoAcumuladoInstance.data.datasets[1].data = saldoData;
+        chartFlujoAcumuladoInstance.data.datasets[1].backgroundColor = barColors;
+        chartFlujoAcumuladoInstance.update();
+      } else {
+        chartFlujoAcumuladoInstance = new Chart(ctx2, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                type: 'line',
+                label: 'Saldo Acumulado',
+                data: acumData,
+                borderColor: '#141413',
+                backgroundColor: 'rgba(20, 20, 19, 0.08)',
+                borderWidth: 2.5,
+                pointRadius: 3.5,
+                fill: true,
+                tension: 0.3,
+                order: 0
+              },
+              {
+                type: 'bar',
+                label: 'Saldo Mensual',
+                data: saldoData,
+                backgroundColor: barColors,
+                borderRadius: 4,
+                order: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { boxWidth: 10, font: { family: 'Inter', size: 11 } }
+              },
+              tooltip: {
+                backgroundColor: '#141413',
+                bodyFont: { family: 'JetBrains Mono', size: 11 },
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${formatMXN(ctx.parsed.y)}`
+                }
+              }
+            },
+            scales: {
+              x: { grid: { display: false } },
+              y: {
+                grid: { color: '#E5E4DF' },
+                ticks: {
+                  font: { family: 'JetBrains Mono', size: 10 },
+                  callback: (v) => '$' + (v / 1000) + 'K'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // 3. Gráfico de Tipología de Proyectos
+      const ctxTip = document.getElementById('chartTipologia').getContext('2d');
+      if (!chartTipologiaInstance) {
+        chartTipologiaInstance = new Chart(ctxTip, {
+          type: 'bar',
+          data: {
+            labels: INGRESOS_POR_TIPOLOGIA.map(t => t.tipo),
+            datasets: [
+              {
+                label: 'Cobrado 2026',
+                data: INGRESOS_POR_TIPOLOGIA.map(t => t.cobrado),
+                backgroundColor: '#141413',
+                borderRadius: 4
+              },
+              {
+                label: 'Por Cobrar 2026',
+                data: INGRESOS_POR_TIPOLOGIA.map(t => t.porCobrar),
+                backgroundColor: '#9E1B32',
+                borderRadius: 4
+              }
+            ]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { boxWidth: 10, font: { family: 'Inter', size: 11 } }
+              },
+              tooltip: {
+                backgroundColor: '#141413',
+                bodyFont: { family: 'JetBrains Mono', size: 11 },
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${formatMXN(ctx.parsed.x)}`
+                }
+              }
+            },
+            scales: {
+              x: {
+                stacked: true,
+                grid: { color: '#E5E4DF' },
+                ticks: {
+                  font: { family: 'JetBrains Mono', size: 10 },
+                  callback: (v) => '$' + (v / 1000000).toFixed(1) + 'M'
+                }
+              },
+              y: {
+                stacked: true,
+                grid: { display: false },
+                ticks: { font: { family: 'Inter', size: 11, weight: 'bold' } }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function updateMeta4TChart(porCobrarSimulado, totalCobro4TSimulado) {
+      const ctx = document.getElementById('chartMeta4T').getContext('2d');
+      const dataValues = [
+        META_4T2026.metaTotal,
+        META_4T2026.cobrado,
+        porCobrarSimulado,
+        totalCobro4TSimulado
+      ];
+
+      if (chartMeta4TInstance) {
+        chartMeta4TInstance.data.datasets[0].data = dataValues;
+        chartMeta4TInstance.update();
+      } else {
+        chartMeta4TInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: [
+              'Meta Cobro 4T2026',
+              'Cobrado 4T2026',
+              'Por Cobrar (Simulado)',
+              'Total 4T Proyectado'
+            ],
+            datasets: [
+              {
+                label: 'Monto (MXN)',
+                data: dataValues,
+                backgroundColor: [
+                  '#141413',
+                  '#10b981',
+                  '#f59e0b',
+                  '#9E1B32'
+                ],
+                borderRadius: 6,
+                barPercentage: 0.6
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#141413',
+                bodyFont: { family: 'JetBrains Mono', size: 12 },
+                callbacks: {
+                  label: (ctx) => formatMXN(ctx.parsed.y)
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { font: { family: 'Inter', size: 11, weight: '600' } }
+              },
+              y: {
+                grid: { color: '#E5E4DF' },
+                ticks: {
+                  font: { family: 'JetBrains Mono', size: 11 },
+                  callback: (v) => '$' + (v / 1000000).toFixed(2) + 'M'
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 6. INTERACCIÓN Y CONTROLES DE USUARIO
+     * ============================================================================
+     */
+    function setQuarterFilter(q) {
+      state.quarterFilter = q;
+      document.querySelectorAll('.q-filter-btn').forEach((btn) => {
+        if (btn.dataset.q === q) {
+          btn.className = 'q-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-neutral-900 text-white shadow-sm';
+        } else {
+          btn.className = 'q-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-neutral-600 hover:text-neutral-900';
+        }
+      });
+      document.getElementById('tableQuarterSelect').value = q;
+      updateKPIs();
+      initOrUpdateCharts();
+      renderMonthlyTable();
+    }
+
+    function sortMonthlyTable(col) {
+      if (state.sortColumn === col) {
+        state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.sortColumn = col;
+        state.sortDirection = col === 'id' ? 'asc' : 'desc';
+      }
+      renderMonthlyTable();
+    }
+
+    function resetDashboard() {
+      document.getElementById('monthSearch').value = '';
+      document.getElementById('projectSearch').value = '';
+      document.getElementById('projectFilterSelect').value = 'ACTIVE';
+      state.sortColumn = 'id';
+      state.sortDirection = 'asc';
+      setQuarterFilter('ALL');
+      updateSimulation(100);
+    }
+
+    function exportMonthlyCSV() {
+      const rows = getMonthlyDataWithRunningBalance();
+      const csv = [
+        ['Mes', 'Trimestre', 'Ingresos (MXN)', 'Egresos (MXN)', 'Saldo Mensual (MXN)', 'Saldo Acumulado (MXN)'].join(',')
+      ];
+      rows.forEach((r) => {
+        csv.push([r.mes, r.quarter, r.ingresos.toFixed(2), r.egresos.toFixed(2), r.total.toFixed(2), r.acumulado.toFixed(2)].join(','));
+      });
+      csv.push(['TOTAL', 'ANUAL', RESUMEN_TOTALES_HOJA.ingresosTotal.toFixed(2), RESUMEN_TOTALES_HOJA.egresosTotal.toFixed(2), RESUMEN_TOTALES_HOJA.flujoNetoTotal.toFixed(2), RESUMEN_TOTALES_HOJA.flujoNetoTotal.toFixed(2)].join(','));
+
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ESENCIAL_Studio_Tabla_Dinamica_Contabilidad_2026.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Listeners del Simulador
+    document.getElementById('simSlider').addEventListener('input', (e) => updateSimulation(e.target.value));
+    document.getElementById('simInput').addEventListener('input', (e) => {
+      if (e.target.value !== '') updateSimulation(e.target.value);
+    });
+
+    /**
+     * ============================================================================
+     * 7. SINCRONIZACIÓN EN VIVO CON GOOGLE SHEETS (SIN SERVIDOR / VÍA JSONP)
+     * Lee directamente la hoja "Tabla Dinámica Contabilidad" del documento:
+     * ID: 1WFQYGgYXtQMpvGzJEZfoVUpbCoz6LSir0v3CllZuXBs
+     * ============================================================================
+     */
+    const GOOGLE_SHEET_ID = '1WFQYGgYXtQMpvGzJEZfoVUpbCoz6LSir0v3CllZuXBs';
+    const GOOGLE_SHEET_NAME = 'Tabla Dinámica Contabilidad';
+
+    const GRUPO_POR_CATEGORIA = {
+      'nomina': 'Capital Humano',
+      'nómina': 'Capital Humano',
+      'sueldos': 'Capital Humano',
+      'subcontratos': 'Capital Humano',
+      'prestamos': 'Pasivos y Financiamiento',
+      'préstamos': 'Pasivos y Financiamiento',
+      'financiamiento': 'Pasivos y Financiamiento',
+      'retiro de utilidades': 'Socios',
+      'inversiones': 'Capital e Inversión',
+      'equipo de computo': 'Capital e Inversión',
+      'equipo de cómputo': 'Capital e Inversión',
+      'mejoras de oficina': 'Capital e Inversión',
+      'renta': 'Gasto Fijo Operativo'
+    };
+
+    function classifyCategoryGroup(catName) {
+      const key = String(catName || '').trim().toLowerCase();
+      return GRUPO_POR_CATEGORIA[key] || 'Operación General';
+    }
+
+    function normalizeCategoryDisplay(rawLabel) {
+      const clean = String(rawLabel || '').replace(/^Total\s+/i, '').trim();
+      const mapAccents = {
+        'Nomina': 'Nómina',
+        'Prestamos': 'Préstamos',
+        'Papeleria': 'Papelería',
+        'Equipo de computo': 'Equipo de cómputo',
+        'Viaticos': 'Viáticos'
+      };
+      return mapAccents[clean] || clean;
+    }
+
+    // Callback global invocado por Google Sheets Visualization API (JSONP)
+    window.onSheetLoaded = function(response) {
+      try {
+        if (!response || response.status !== 'ok' || !response.table || !response.table.rows) {
+          throw new Error('Respuesta inválida de Google Sheets');
+        }
+
+        const rows = response.table.rows;
+        const getVal = (rIdx, cIdx) => {
+          const r = rows[rIdx];
+          if (!r || !r.c || !r.c[cIdx]) return null;
+          return r.c[cIdx].v !== undefined && r.c[cIdx].v !== null ? r.c[cIdx].v : r.c[cIdx].f;
+        };
+
+        // 1. EXTRAER TABLA DINÁMICA DE EGRESOS POR CONCEPTO (Columnas G=6, J=9, K=10)
+        const nuevosEgresos = [];
+        let nuevaSumaTD = 0;
+
+        for (let r = 0; r < Math.min(rows.length, 40); r++) {
+          const labelG = String(getVal(r, 6) || '').trim();
+          const montoJ = Number(getVal(r, 9));
+          const pctK = Number(getVal(r, 10));
+
+          if (labelG.toLowerCase() === 'suma total' && !isNaN(montoJ) && montoJ > 0) {
+            nuevaSumaTD = montoJ;
+            break;
+          }
+          if (labelG.toLowerCase().startsWith('total ') && labelG.length > 6 && !isNaN(montoJ) && montoJ > 0) {
+            const nombreConcepto = normalizeCategoryDisplay(labelG);
+            nuevosEgresos.push({
+              concepto: nombreConcepto,
+              monto: montoJ,
+              pct: !isNaN(pctK) ? pctK * 100 : 0,
+              grupo: classifyCategoryGroup(nombreConcepto)
+            });
+          }
+        }
+
+        if (nuevosEgresos.length > 0) {
+          EGRESOS_POR_CONCEPTO.length = 0;
+          nuevosEgresos.forEach(item => EGRESOS_POR_CONCEPTO.push(item));
+          SUMA_EGRESOS_TABLA_DINAMICA = nuevaSumaTD || nuevosEgresos.reduce((a, b) => a + b.monto, 0);
+        }
+
+        // 2. EXTRAER RESUMEN ANUAL POR MES, INGRESOS POR TIPO DE PROYECTO Y META 4T2026
+        // Escaneamos las celdas de las primeras 85 filas para ser inmunes a desplazamientos de columnas
+        const monthMap = {};
+        const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const nuevasTipologias = [];
+        let proyectoHeaderPos = null;
+
+        for (let r = 0; r < Math.min(rows.length, 85); r++) {
+          const rowCells = rows[r].c || [];
+          for (let c = 5; c < rowCells.length; c++) {
+            const cellVal = getVal(r, c);
+            if (typeof cellVal !== 'string') continue;
+            const text = cellVal.trim();
+            const upper = text.toUpperCase();
+
+            // A) Meses del Resumen Anual
+            if (mesesNombres.includes(text)) {
+              const ing = Number(getVal(r, c + 1)) || 0;
+              const egr = Number(getVal(r, c + 2)) || 0;
+              const tot = Number(getVal(r, c + 3)) || (ing - egr);
+              monthMap[text] = { ingresos: ing, egresos: egr, total: tot };
+            } else if (upper === 'TOTAL') {
+              const n1 = Number(getVal(r, c + 1));
+              const n2 = Number(getVal(r, c + 2));
+              const n3 = Number(getVal(r, c + 3));
+              const n4 = Number(getVal(r, c + 4));
+              // Distinguir entre TOTAL de Resumen Anual (3 cols) y TOTAL de Tipología (4 cols con % = 1)
+              if (!isNaN(n1) && !isNaN(n2) && !isNaN(n3) && (isNaN(n4) || n4 === 0)) {
+                RESUMEN_TOTALES_HOJA.ingresosTotal = n1;
+                RESUMEN_TOTALES_HOJA.egresosTotal = n2;
+                RESUMEN_TOTALES_HOJA.flujoNetoTotal = n3;
+              }
+            } else if (upper === 'PROMEDIO') {
+              const p1 = Number(getVal(r, c + 1));
+              const p2 = Number(getVal(r, c + 2));
+              const p3 = Number(getVal(r, c + 3));
+              if (!isNaN(p1)) RESUMEN_TOTALES_HOJA.ingresosPromedio = p1;
+              if (!isNaN(p2)) RESUMEN_TOTALES_HOJA.egresosPromedio = p2;
+              if (!isNaN(p3)) RESUMEN_TOTALES_HOJA.flujoNetoPromedio = p3;
+            }
+
+            // B) Ingresos por Tipo de Proyecto (CASA, DESARROLLOS, SERVICIOS)
+            if (['CASA', 'DESARROLLOS', 'SERVICIOS'].includes(upper)) {
+              const cob = Number(getVal(r, c + 1));
+              const porCob = Number(getVal(r, c + 2));
+              const tot = Number(getVal(r, c + 3));
+              const pct = Number(getVal(r, c + 4));
+              if (!isNaN(cob) && !isNaN(tot) && tot > 0) {
+                nuevasTipologias.push({
+                  tipo: upper,
+                  cobrado: cob,
+                  porCobrar: isNaN(porCob) ? 0 : porCob,
+                  total: tot,
+                  porcentaje: !isNaN(pct) ? pct * 100 : 0
+                });
+              }
+            }
+
+            // C) Meta de Cobro 4T2026
+            if (upper === 'META DE COBRO 4T2026') {
+              const mVal = Number(getVal(r, c + 1));
+              if (!isNaN(mVal) && mVal > 0) META_4T2026.metaTotal = mVal;
+            } else if (upper === 'COBRADO 4T2026') {
+              const cVal = Number(getVal(r, c + 1));
+              if (!isNaN(cVal)) META_4T2026.cobrado = cVal;
+            } else if (upper === 'POR COBRAR 4T2026') {
+              const pVal = Number(getVal(r, c + 1));
+              if (!isNaN(pVal)) META_4T2026.porCobrar = pVal;
+            } else if (upper === 'PROYECTO') {
+              proyectoHeaderPos = { row: r, col: c };
+            }
+          }
+        }
+
+        // Aplicar meses actualizados
+        RESUMEN_MENSUAL.forEach((m) => {
+          if (monthMap[m.mes]) {
+            m.ingresos = monthMap[m.mes].ingresos;
+            m.egresos = monthMap[m.mes].egresos;
+            m.total = monthMap[m.mes].total;
+          }
+        });
+
+        // Aplicar Tipologías actualizadas
+        if (nuevasTipologias.length > 0) {
+          nuevasTipologias.sort((a, b) => b.total - a.total);
+          INGRESOS_POR_TIPOLOGIA.length = 0;
+          nuevasTipologias.forEach(t => INGRESOS_POR_TIPOLOGIA.push(t));
+        }
+
+        // D) Extraer lista de proyectos debajo del encabezado "PROYECTO"
+        if (proyectoHeaderPos) {
+          const nuevosProyectos = [];
+          for (let r = proyectoHeaderPos.row + 1; r < Math.min(rows.length, proyectoHeaderPos.row + 65); r++) {
+            const rawName = getVal(r, proyectoHeaderPos.col);
+            const rawMonto = getVal(r, proyectoHeaderPos.col + 1);
+            const nameStr = rawName !== null && rawName !== undefined ? String(rawName).trim() : '';
+            if (nameStr.toLowerCase() === 'suma total') break;
+            if (!nameStr) continue;
+            const montoNum = Number(rawMonto) || 0;
+            nuevosProyectos.push({
+              proyecto: nameStr,
+              porCobrar: montoNum
+            });
+          }
+          if (nuevosProyectos.length > 0) {
+            PROYECTOS_4T2026.length = 0;
+            nuevosProyectos.forEach(p => PROYECTOS_4T2026.push(p));
+          }
+        }
+
+        // Refrescar todos los módulos visuales del Dashboard
+        renderEgresosPorConcepto();
+        renderIngresosPorTipologia();
+        updateKPIs();
+        initOrUpdateCharts();
+        updateSimulation(state.simEffectiveness);
+        renderMonthlyTable();
+
+        // Actualizar indicador visual de sincronización exitosa
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const syncDot = document.getElementById('syncDot');
+        const syncText = document.getElementById('syncText');
+        const syncIcon = document.getElementById('syncIcon');
+        if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+        if (syncText) syncText.textContent = `En vivo · ${timeStr}`;
+        if (syncIcon) syncIcon.classList.remove('animate-spin');
+      } catch (err) {
+        console.error('Error al procesar datos de Google Sheets:', err);
+        setSyncErrorState();
+      }
+    };
+
+    function setSyncErrorState() {
+      const syncDot = document.getElementById('syncDot');
+      const syncText = document.getElementById('syncText');
+      const syncIcon = document.getElementById('syncIcon');
+      if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+      if (syncText) syncText.textContent = 'Modo Local (Offline)';
+      if (syncIcon) syncIcon.classList.remove('animate-spin');
+    }
+
+    function syncWithGoogleSheets(isManual = false) {
+      const syncDot = document.getElementById('syncDot');
+      const syncText = document.getElementById('syncText');
+      const syncIcon = document.getElementById('syncIcon');
+
+      if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-ping';
+      if (syncText && isManual) syncText.textContent = 'Sincronizando...';
+      if (syncIcon) syncIcon.classList.add('animate-spin');
+
+      const oldScript = document.getElementById('googleSheetsJsonpScript');
+      if (oldScript) oldScript.remove();
+
+      const script = document.createElement('script');
+      script.id = 'googleSheetsJsonpScript';
+      const encodedSheet = encodeURIComponent(GOOGLE_SHEET_NAME);
+      script.src = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=responseHandler:onSheetLoaded&sheet=${encodedSheet}&_ts=${Date.now()}`;
+      script.onerror = () => setSyncErrorState();
+      document.body.appendChild(script);
+    }
+
+    // Inicialización general + Auto-sincronización al abrir y cada 60 segundos
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      renderEgresosPorConcepto();
+      renderIngresosPorTipologia();
+      updateKPIs();
+      initOrUpdateCharts();
+      updateSimulation(100);
+      renderMonthlyTable();
+
+      // Conectar en vivo con Google Sheets inmediatamente y programar actualización cada 60s
+      syncWithGoogleSheets(false);
+      setInterval(() => syncWithGoogleSheets(false), 60000);
+    });
+  </script>
+</body>
+</html>
